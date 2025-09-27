@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MRZ Autofill PWA</title>
+  <meta name="theme-color" content="#0b0b0b"/>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root { --bg:#0b0b0b; --fg:#eaeaea; --muted:#aaa; --ok:#3bcf4a; --warn:#ffd166; --bad:#ff6b6b; }
+    html, body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif; }
+    header { position:sticky; top:0; z-index:2; background:var(--bg); border-bottom:1px solid #1a1a1a; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { font-size:16px; margin:0; }
+    main { max-width:960px; margin:0 auto; padding:16px; }
+    .frame { position:relative; }
+    video { width:100%; height:auto; background:#111; border-radius:12px; }
+    .overlay { position:absolute; left:5%; right:5%; bottom:12%; height:24%; border:2px solid var(--ok); border-radius:12px; box-shadow:0 0 0 200vmax rgba(0,0,0,.35); pointer-events:none; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:12px 0; }
+    button { background:var(--ok); color:#0b0b0b; border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; }
+    button.secondary { background:#1f1f1f; color:var(--fg); border:1px solid #2a2a2a; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    input[type=file] { display:none; }
+    label.btn { background:#1f1f1f; color:var(--fg); border:1px solid #2a2a2a; padding:10px 14px; border-radius:10px; cursor:pointer; }
+    .status { font-size:14px; color:var(--muted); }
+    .pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; margin-left:8px; }
+    .pill.ok { background:#153a1b; color:var(--ok); border:1px solid #1f6b28; }
+    .pill.warn { background:#3a300f; color:#ffd166; border:1px solid #8c6a1e; }
+    .pill.bad { background:#3a1414; color:#ff6b6b; border:1px solid #8c2a2a; }
+    pre { background:#111; padding:12px; border-radius:12px; overflow:auto; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+    .card { background:#111; border:1px solid #1f1f1f; border-radius:12px; padding:12px; }
+    .label { font-size:12px; color:var(--muted); }
+    .value { font-size:14px; margin-top:2px; word-break:break-all; }
+    .hint { font-size:13px; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MRZ Autofill (PWA)</h1>
+    <div>
+      <button id="installBtn" class="secondary">Install</button>
+    </div>
+  </header>
+  <main>
+    <div class="frame">
+      <video id="video" playsinline autoplay muted></video>
+      <div class="overlay"></div>
+    </div>
+
+    <div class="row">
+      <button id="scanBtn">Scan (Burst)</button>
+      <button id="flipBtn" class="secondary">Flip camera</button>
+      <label for="fileInput" class="btn">Upload photo</label>
+      <input id="fileInput" type="file" accept="image/*" capture="environment">
+      <span id="status" class="status">Align the two MRZ lines inside the green box, or upload a sharp photo.</span>
+    </div>
+
+    <div class="row">
+      <span>Confidence:</span>
+      <span id="confPill" class="pill warn">—</span>
+      <button id="copyJson" class="secondary" disabled>Copy JSON</button>
+    </div>
+
+    <div class="grid" id="fields"></div>
+    <h3>Raw</h3>
+    <pre id="raw">—</pre>
+  </main>
+
+  <canvas id="work" style="display:none;"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="mrz-pro-upload.js"></script>
+  <script src="sw-register.js"></script>
+  <script>
+    // PWA install prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); deferredPrompt = e; installBtn.disabled = false;
+    });
+    installBtn.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null; installBtn.disabled = true;
+    };
+  </script>
+</body>
+</html>
