@@ -1,4 +1,7 @@
-// --- Replace the existing upload handler with this one ---
+window.addEventListener('DOMContentLoaded', () => {
+  const statusEl = document.getElementById('status');
+
+  // --- Replace the existing upload handler with this one ---
 fileInput.onchange = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -99,3 +102,6 @@ function downscaleForCoarse(srcCanvas, targetMaxWidth){
   ctx.drawImage(srcCanvas, 0, 0, c.width, c.height);
   return c;
 }
+
+  // ... rest of your code ...
+});
