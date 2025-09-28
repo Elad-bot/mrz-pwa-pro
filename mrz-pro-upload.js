@@ -1,4 +1,3 @@
-\
 /* MRZ PWA with: burst capture OR upload still image (single-frame path). */
 const video = document.getElementById('video');
 const work = document.getElementById('work');
